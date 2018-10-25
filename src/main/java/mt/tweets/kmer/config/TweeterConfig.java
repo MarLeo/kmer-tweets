@@ -4,11 +4,13 @@ package mt.tweets.kmer.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import twitter4j.Twitter;
-import twitter4j.TwitterFactory;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
 @Configuration
+@PropertySource("classpath:application.properties")
 public class TweeterConfig {
 
 
@@ -19,27 +21,44 @@ public class TweeterConfig {
     private String consumerSecret;
 
     @Value("${oauth.accessToken}")
-    private String accessToekn;
+    private String accessToken;
 
     @Value("${oauth.accessTokenSecret}")
     private String accessTokenSecret;
 
 
     @Bean
-    public ConfigurationBuilder configurationBuilder() {
+    public twitter4j.conf.Configuration configuration() {
         return new ConfigurationBuilder()
                 .setDebugEnabled(true)
                 .setOAuthConsumerKey(consumerKey)
                 .setOAuthConsumerSecret(consumerSecret)
-                .setOAuthAccessToken(accessToekn)
-                .setOAuthAccessTokenSecret(accessTokenSecret);
+                .setOAuthAccessToken(accessToken)
+                .setOAuthAccessTokenSecret(accessTokenSecret).build();
     }
 
 
     @Bean
     public Twitter twitter() {
-        return new TwitterFactory(configurationBuilder().build())
+        return new TwitterFactory(configuration())
                 .getInstance();
+    }
+
+    @Bean
+    public TwitterStream twitterStream() {
+        return new TwitterStreamFactory(configuration())
+                .getInstance();
+    }
+
+    @Bean
+    public AsyncTwitter asyncTwitter() {
+        return new AsyncTwitterFactory(configuration())
+                .getInstance();
+    }
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
     }
 
 
